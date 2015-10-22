@@ -20,7 +20,7 @@
 </head>
 
 <body>
-<h3 align="center"><i>XPlor</i></h3>
+<h3 align="center"><i>You're Covered</i></h3>
 <div>
 <div class= "container">
   <div class="row">
@@ -58,12 +58,14 @@
           <div class="col-md-3">
             <a id="twitter-signin" href="javascript:login('twitter');">
                <i id="twitter-signin-btn" class="fa fa-twitter-square fa-3x"></i>
-            <p>Twitter</p></a>
+            <p>Twitter</p>
+            </a>
           </div>
           <div class="col-md-3">
           <a id="facebook-signin" href="javascript:login('facebook');">
           <i id="facebook-signin-btn" class="fa fa-facebook-square fa-3x"></i>
-          <p>facebook</p></a>
+          <p>facebook</p>
+          </a>
           </div>
           <!--<div class="col-md-3"></div> -->
         </div>
@@ -87,11 +89,15 @@
       $('#messageInput').keypress(function (e) {
 
         // Create a callback which logs the current auth state
+        // want to check to see if the user is logged in: This is with a getAuth function
+
         function authDataCallback(authData) {
           if (authData) {
             console.log("User " + authData.uid + " is logged in with " + authData.provider);
-            var userId = authData.id;
+            var userId = authData.uid;
             name = authData[authData.provider].displayName;
+            myDataRef.child('users').child(userId).push({id: userId, name:name});
+
           } else {
             console.log("User is logged out");
           }
@@ -108,14 +114,19 @@
           var text = $('#messageInput').val();
           if(!name) {
             authModal.modal('show');
+          } else { // dont submit anything unless we know the users name!
+// var name = $('#nameinput').val();
+            var text = $('#messageInput').val();
+            myDataRef.child('messages').push({name: name, text: text});
+            $('messageInput').val('');
           }
-          myDataRef.push({name: name, text: text});
-          $('#messageInput').val('');
+
         }
       });
 
       function login(provider){
         console.log("login with ", provider);
+        authModal.modal('hide');
         myDataRef.authWithOAuthPopup(provider, function(error, authData) {
           if (error) {
             console.log("Login Failed!", error);
@@ -131,8 +142,9 @@
         location.reload();
       }
 
-      myDataRef.on('child_added', function(snapshot) {
+      myDataRef.child('messages').on('child_added', function(snapshot) {
         var message = snapshot.val();
+        //console.log(message);
         displayChatMessage(message.name, message.text);
       });
       function displayChatMessage(name, text) {
