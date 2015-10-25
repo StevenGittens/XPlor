@@ -21,11 +21,68 @@
 
 <body>
 <h3 align="center"><i>You're Covered</i></h3>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-xs-6 ">
+
+      <div class="small">
+        <h3><i>West Side Warios</i></h3>
+        <p>
+          Stay connected with you're team!
+        </p>
+        <p>
+        <!--<div class="btn-group">-->
+          <!--<div class="btn-group">-->
+            <!--<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">-->
+              <!--Dropdown-->
+              <!--<span class="caret"></span>-->
+            <!--</button>-->
+
+            <!--<ul class="dropdown-menu" role="menu">-->
+              <!--<li><a href="#">Updated schedule</a></li>-->
+              <!--<li><a href="#">Message MGMT</a></li>-->
+            <!--</ul>-->
+          <!--</div>-->
+        <!--</div>-->
+
+        <!--<a href="#" class="btn btn-success">Click for Options-->
+
+           <!--</a>-->
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
 <div>
 <div class= "container">
   <div class="row">
     <div class="col-xs-2 visit">
-      <p> Channels </p>
+      <p> <h5> YC Chat </h5> </p>
+      <button type="button" class="btn btn-primary btn-block" onclick=yc()>You're C Chat</button>
+      <button type="button" class="btn btn-warning btn-block" onclick=general()>General</button>
+
+      <div class="btn-group">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            Dropdown
+            <span class="caret"></span>
+          </button>
+
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="https://www.google.ca/"> Upload schedule</a></li>
+            <li><a href="#">Message MGMT</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p> Users </p>
+      <div id="namesDiv"></div>
     </div>
     <div class="col-xs-10">
       <div class="row">
@@ -84,57 +141,100 @@
 
     <script>
       var myDataRef = new Firebase('https://xplor.firebaseio.com/');
+      var channel ="yc chat";
       var name= "";
       var authModal = $('#auth-modal').modal( {show: false }); //we dont want the modal to show immediately
-      $('#messageInput').keypress(function (e) {
 
         // Create a callback which logs the current auth state
         // want to check to see if the user is logged in: This is with a getAuth function
 
-        function authDataCallback(authData) {
-          if (authData) {
-            console.log("User " + authData.uid + " is logged in with " + authData.provider);
-            var userId = authData.uid;
-            name = authData[authData.provider].displayName;
-            myDataRef.child('users').child(userId).push({id: userId, name:name});
+        var authData = myDataRef.getAuth();
 
-          } else {
-            console.log("User is logged out");
+       if (authData) {
+         var userId = authData.uid;
+         name = authData[authData.provider].displayName;
+         console.log('user is already logged in', name);
+       }
+
+
+      function yc(){
+        console.log("Your C chat was clicked")
+        $('#messagesDiv').empty();
+        channel='yc chat';
+        console.log('the chat is ', channel);
+        myDataRef.child('messages').child(channel).on('child_added', function(snapshot) {
+          var message = snapshot.val();
+          //console.log(message);
+          displayChatMessage(message.name, message.text);
+        });
+      }
+      function general(){
+        console.log("You are now in the general chat");
+        $('#messagesDiv').empty();
+        channel='general';
+        console.log('the chat is ', channel);
+        myDataRef.child('messages').child(channel).on('child_added', function(snapshot) {
+          var message = snapshot.val();
+          //console.log(message);
+          displayChatMessage(message.name, message.text);
+      });
+      }
+        function login(provider){
+          console.log("login with ", provider);
+          authModal.modal('hide');
+          myDataRef.authWithOAuthPopup(provider, function(error, authData) {
+            if (error) {
+              console.log("Login Failed!", error);
+            } else {
+              console.log("Authenticated successfully with payload:", authData);
+              //console.log("User " + authData.uid + " is logged in with " + authData.provider);
+              var userId = authData.uid;
+              name = authData[authData.provider].displayName;
+              myDataRef.child('user').child(userId).once("value", function(snapshot){
+                var ifExists = snapshot.exists(); //a firebase function
+                if (ifExists){
+                  console.log('user is already in the system');
+                } else {
+                  myDataRef.child('user').child(userId).push({id: userId, name:name});
+                }
+              })
+            }
+          });
+        }
+      myDataRef.child('user').on('value', function(snapshot){
+        var allNames = snapshot.val();
+        //console.log(allNames);
+        for (var u in allNames) {
+          for(var i in allNames[u]) {
+            console.log(allNames[u][i].name);
+            displayNamesUser(allNames[u][i].name)
           }
         }
-// Register the callback to be fired every time auth state changes
+      })
 
-        myDataRef.onAuth(authDataCallback);
+      function displayNamesUser(userName){
+      $('<div/>').text(userName).appendTo($('#namesDiv'));
 
+      }
 
-        // check to see if the user is logged in?
-
+        $('#messageInput').keypress(function (e)  {
+          // check to see if the user is logged in?
         if (e.keyCode == 13) {
-          // var name = $('#nameInput').val();
+
           var text = $('#messageInput').val();
           if(!name) {
             authModal.modal('show');
           } else { // dont submit anything unless we know the users name!
-// var name = $('#nameinput').val();
-            var text = $('#messageInput').val();
-            myDataRef.child('messages').push({name: name, text: text});
-            $('messageInput').val('');
+           // var text = $('#messageInput').val();
+            console.log(channel);
+            myDataRef.child('messages').child(channel).push({name: name, text: text});
+            $('#messageInput').val('');
           }
 
         }
       });
 
-      function login(provider){
-        console.log("login with ", provider);
-        authModal.modal('hide');
-        myDataRef.authWithOAuthPopup(provider, function(error, authData) {
-          if (error) {
-            console.log("Login Failed!", error);
-          } else {
-            console.log("Authenticated successfully with payload:", authData);
-          }
-        });
-      }
+
 
       function logout(){
         console.log("logging out");
@@ -142,15 +242,16 @@
         location.reload();
       }
 
-      myDataRef.child('messages').on('child_added', function(snapshot) {
+      myDataRef.child('messages').child(channel).on('child_added', function(snapshot) {
         var message = snapshot.val();
         //console.log(message);
         displayChatMessage(message.name, message.text);
       });
       function displayChatMessage(name, text) {
         $('<div/>').text(text).prepend($('<em/>').text(name+': ')).appendTo($('#messagesDiv'));
+
         $('#messagesDiv')[0].scrollTop = $('#messagesDiv')[0].scrollHeight;
-      };
+      }
     </script>
   </body>
 </html>
