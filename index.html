@@ -63,20 +63,20 @@
 <div class= "container">
   <div class="row">
     <div class="col-xs-2 visit">
-      <p> <h5> YC Chat </h5> </p>
-      <button type="button" class="btn btn-primary btn-block" onclick=yc()>You're C Chat</button>
+      <p> <h3 align="center"> YC Chat </h3> </p>
+      <button type="button" class="btn btn-primary btn-block" onclick=yc()>Get Covered</button>
       <button type="button" class="btn btn-warning btn-block" onclick=general()>General</button>
 
       <div class="btn-group">
         <div class="btn-group">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            Dropdown
+            Other options:
             <span class="caret"></span>
           </button>
 
           <ul class="dropdown-menu" role="menu">
-            <li><a href="https://www.google.ca/"> Upload schedule</a></li>
-            <li><a href="#">Message MGMT</a></li>
+            <li><a href="https://www.google.ca/search?q=schedules&biw=1425&bih=699&source=lnms&tbm=isch&sa=X&ved=0CAYQ_AUoAWoVChMIu-Ck36bfyAIVyGweCh2UNwwT"> Upload schedule</a></li>
+            <li><a href="http://www.maritimebusinesscollege.ca/?gclid=Cj0KEQjw-7GxBRCL_Kq6mZSHvdsBEiQA7r8VhLqJhq_M4D2y4o6AW6-OTCq4W_kBlYU4Qje6LxPG2gkaAlkX8P8HAQ#!small-business-management/c4d6">Message MGMT</a></li>
           </ul>
         </div>
       </div>
@@ -164,8 +164,8 @@
         console.log('the chat is ', channel);
         myDataRef.child('messages').child(channel).on('child_added', function(snapshot) {
           var message = snapshot.val();
-          //console.log(message);
-          displayChatMessage(message.name, message.text);
+          console.log('the error?', message);
+//          displayChatMessage(message.name, message.text);
         });
       }
       function general(){
